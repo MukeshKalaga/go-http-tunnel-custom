@@ -16,38 +16,14 @@ options:
 
 const usage2 string = `
 Commands:
-	tunnel id                      Show client identifier
-	tunnel list                    List tunnel names from config file
-	tunnel start [tunnel] [...]    Start tunnels by name from config file
-	tunnel start-all               Start all tunnels defined in config file
+	tunnel qstart               Quick start defined config  
 
 Examples:
-	tunnel start www ssh
-	tunnel -config config.yaml -log-level 2 start ssh
-	tunnel start-all
+	tunnel qstart -host example.arumiot.com -p 3000
 
-config.yaml:
-	server_addr: SERVER_IP:5223
-	tunnels:
-	  webui:
-	    proto: http
-	    addr: localhost:8080
-	    auth: user:password
-	    host: webui.my-tunnel-host.com
-	  ssh:
-	    proto: tcp
-	    addr: 192.168.0.5:22
-	    remote_addr: 0.0.0.0:22
-	  tls:
-	    proto: sni
-	    addr: localhost:443
-	    host: tls.my-tunnel-host.com
-
-Author:
+Contributions:
 	Written by M. Matczuk (mmatczuk@gmail.com)
-
-Bugs:
-	Submit bugs to https://github.com/mmatczuk/go-http-tunnel/issues
+	Modified by Arum Innovations Pvt. Ltd.
 `
 
 func init() {
@@ -63,17 +39,25 @@ type options struct {
 	logLevel int
 	version  bool
 	command  string
+	host     string
+	port     int
+	protocol string
 	args     []string
 }
 
 func parseArgs() (*options, error) {
 	config := flag.String("config", "tunnel.yml", "Path to tunnel configuration file")
+	host := flag.String("host", "hookurl.arumiot.com", "Hook Url")
+	port := flag.Int("p", 8000, "Local Port to expose")
+	protocol := flag.String("protocol", "http", "Protocol")
 	logLevel := flag.Int("log-level", 1, "Level of messages to log, 0-3")
 	version := flag.Bool("version", false, "Prints tunnel version")
 	flag.Parse()
-
 	opts := &options{
 		config:   *config,
+		host:     *host,
+		port:     *port,
+		protocol: *protocol,
 		logLevel: *logLevel,
 		version:  *version,
 		command:  flag.Arg(0),
@@ -102,9 +86,13 @@ func parseArgs() (*options, error) {
 		if len(opts.args) > 0 {
 			return nil, fmt.Errorf("start-all takes no arguments")
 		}
+	case "qstart":
+		opts.args = flag.Args()[1:]
+		if len(opts.args) > 0 {
+			return nil, fmt.Errorf("qstart takes no arguments")
+		}
 	default:
 		return nil, fmt.Errorf("unknown command %q", opts.command)
 	}
-
 	return opts, nil
 }

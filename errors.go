@@ -4,7 +4,11 @@
 
 package tunnel
 
-import "errors"
+import (
+	"errors"
+	"fmt"
+	"io/ioutil"
+)
 
 var (
 	errClientNotSubscribed    = errors.New("client not subscribed")
@@ -13,3 +17,14 @@ var (
 
 	errUnauthorised = errors.New("unauthorised")
 )
+
+func errClientNotSubscribedHtml(p string) error {
+	content, err := ioutil.ReadFile("../templates/client_not_subscribed.html")
+
+	if err != nil {
+		return errors.New("Client Not subscribed")
+	}
+	fmt.Println(string(content) + " " + p)
+
+	return errors.New(string(content) + " " + p)
+}

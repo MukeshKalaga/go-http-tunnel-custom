@@ -130,6 +130,7 @@ func (r *registry) set(i *RegistryItem, identifier id.ID) error {
 
 	j, ok := r.items[identifier]
 	if !ok {
+		//TODO Add custom error handler
 		return errClientNotSubscribed
 	}
 	if j != voidRegistryItem {

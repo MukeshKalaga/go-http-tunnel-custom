@@ -606,7 +606,8 @@ func (s *Server) Upgrade(identifier id.ID, conn net.Conn, requestBytes []byte) e
 	tlsConn, ok := conn.(*tls.Conn)
 	if ok {
 		msg.ForwardedHost = tlsConn.ConnectionState().ServerName
-		err = keepAlive(tlsConn.NetConn())
+		print(tlsConn)
+		err = keepAlive(tlsConn)
 
 	} else {
 		msg.ForwardedHost = conn.RemoteAddr().String()
@@ -642,7 +643,8 @@ func (s *Server) Upgrade(identifier id.ID, conn net.Conn, requestBytes []byte) e
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	resp, err := s.RoundTrip(r)
 	if err == errUnauthorised {
-		w.Header().Set("WWW-Authenticate", "Basic realm=\"User Visible Realm\"")
+		w.Header().Add("Content-Type", "text/html; charset=UTF-8")
+		w.Header().Add("WWW-Authenticate", "Basic realm=\"User Visible Realm\"")
 		http.Error(w, err.Error(), http.StatusUnauthorized)
 		return
 	}
@@ -675,6 +677,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func (s *Server) RoundTrip(r *http.Request) (*http.Response, error) {
 	identifier, auth, ok := s.Subscriber(r.Host)
 	if !ok {
+		//TODO Add custom error handler
 		return nil, errClientNotSubscribed
 	}
 
